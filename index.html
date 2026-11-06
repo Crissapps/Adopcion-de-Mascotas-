@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Huellas Felices - Acceso</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #34d399 0%, #0d9488 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; padding: 20px; box-sizing: border-box; }
-        .tarjeta-login { background: white; display: flex; flex-direction: column; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 40px rgba(11, 94, 89, 0.25); width: 100%; max-width: 420px; transition: transform 0.3s; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #34d399 0%, #0d9488 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .tarjeta-login { background: white; display: flex; flex-direction: column; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 40px rgba(11, 94, 89, 0.25); width: 100%; max-width: 420px; }
         .banner-mascotas { background-color: #115e59; color: white; padding: 30px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .banner-mascotas .emoji-pets { font-size: 55px; margin-bottom: 10px; animation: float 3s ease-in-out infinite; }
         .banner-mascotas h2 { margin: 0; font-size: 28px; font-weight: 800; }
@@ -18,9 +18,9 @@
         .fila-doble { display: flex; gap: 15px; }
         .fila-doble .grupo-entrada { flex: 1; }
         label { display: block; font-size: 12.5px; font-weight: 700; color: #115e59; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        input { width: 100%; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 12px; box-sizing: border-box; font-size: 14.5px; color: #1e293b; background-color: #f8fafc; transition: all 0.2s; }
+        input { width: 100%; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 12px; box-sizing: border-box; font-size: 14.5px; color: #1e293b; background-color: #f8fafc; transition: all 0.2s ease; }
         input:focus { outline: none; border-color: #34d399; background-color: #ffffff; box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.15); }
-        button { width: 100%; background: #0d9488; color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; margin-top: 10px; box-shadow: 0 4px 12px rgba(13, 148, 136, 0.2); }
+        button { width: 100%; background: #0d9488; color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; margin-top: 10px; }
         button:hover { background: #115e59; }
         .enlace-cambio { margin-top: 20px; font-size: 14px; color: #475569; }
         .enlace-cambio a { color: #0d9488; font-weight: 700; cursor: pointer; }
@@ -38,7 +38,6 @@
             <p>"No puedes comprar el amor, pero puedes adoptarlo"</p>
         </div>
 
-        <!-- FORMULARIO DE LOGIN -->
         <div class="contenedor-formulario" id="seccionLogin">
             <h3>¡Bienvenidos de vuelta!</h3>
             <p class="sub">Ingresa tus credenciales para acceder</p>
@@ -59,12 +58,10 @@
             <div id="alertaLogin" class="alerta"></div>
         </div>
 
-        <!-- FORMULARIO DE REGISTRO CON CAMPOS SOLICITADOS -->
         <div class="contenedor-formulario" id="seccionRegistro" style="display: none;">
             <h3>Crear una Cuenta</h3>
             <p class="sub">Únete a nosotros y adopta un amigo</p>
             <form id="registroForm">
-                <!-- Nombres y Apellidos en la misma fila para ahorrar espacio -->
                 <div class="fila-doble">
                     <div class="grupo-entrada">
                         <label>Nombres</label>
@@ -93,6 +90,18 @@
     </div>
 
     <script>
+        const API_BASE = (() => {
+            if (window.location.protocol === 'file:') {
+                return 'http://localhost:3000';
+            }
+
+            return window.location.origin;
+        })();
+
+        function apiUrl(path) {
+            return `${API_BASE}${path}`;
+        }
+
         function mostrarRegistro() {
             document.getElementById('seccionLogin').style.display = 'none';
             document.getElementById('seccionRegistro').style.display = 'block';
@@ -104,61 +113,87 @@
             document.getElementById('alertaRegistro').style.display = 'none';
         }
 
-        // Lógica de Login
+        function mostrarError(alerta, mensaje) {
+            alerta.innerText = mensaje;
+            alerta.style.backgroundColor = '#fee2e2';
+            alerta.style.color = '#991b1b';
+            alerta.style.border = '1px solid #fca5a5';
+            alerta.style.display = 'block';
+        }
+
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const correo = document.getElementById('correoLogin').value;
+            const correo = document.getElementById('correoLogin').value.trim();
             const contrasena = document.getElementById('contrasenaLogin').value;
             const alerta = document.getElementById('alertaLogin');
             alerta.style.display = 'none';
+
             try {
-                const respuesta = await fetch('/api/usuarios/login', {
+                const respuesta = await fetch(apiUrl('/api/usuarios/login'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ correo, contrasena })
                 });
+
                 const datos = await respuesta.json();
+
                 if (respuesta.ok) {
                     alerta.innerText = `¡Bienvenido(a), ${datos.usuario.nombre_completo}! ✨`;
-                    alerta.style.backgroundColor = '#d1fae5'; alerta.style.color = '#065f46'; alerta.style.border = '1px solid #a7f3d0'; alerta.style.display = 'block';
+                    alerta.style.backgroundColor = '#d1fae5';
+                    alerta.style.color = '#065f46';
+                    alerta.style.border = '1px solid #a7f3d0';
+                    alerta.style.display = 'block';
                     localStorage.setItem('usuarioLogueado', JSON.stringify(datos.usuario));
                     setTimeout(() => { window.location.href = '/catalogo'; }, 1500);
                 } else {
-                    alerta.innerText = datos.error || 'Credenciales incorrectas';
-                    alerta.style.backgroundColor = '#fee2e2'; alerta.style.color = '#991b1b'; alerta.style.border = '1px solid #fca5a5'; alerta.style.display = 'block';
+                    mostrarError(alerta, datos.error || 'Credenciales incorrectas');
                 }
-            } catch (error) { alerta.innerText = 'Error de conexión'; alerta.style.display = 'block'; }
+            } catch (error) {
+                console.error('Error de conexión:', error);
+                const mensaje = window.location.protocol === 'file:'
+                    ? 'No hay servidor activo. Ejecuta: npm start y abre http://localhost:3000'
+                    : 'Error de conexión. Revisa que el servidor esté ejecutándose.';
+                mostrarError(alerta, mensaje);
+            }
         });
 
-        // Lógica de Registro (Une Nombres y Apellidos al enviar al backend)
         document.getElementById('registroForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const nombres = document.getElementById('nombreRegistro').value;
-            const apellidos = document.getElementById('apellidoRegistro').value;
-            const correo = document.getElementById('correoRegistro').value;
+            const nombres = document.getElementById('nombreRegistro').value.trim();
+            const apellidos = document.getElementById('apellidoRegistro').value.trim();
+            const correo = document.getElementById('correoRegistro').value.trim();
             const contrasena = document.getElementById('contrasenaRegistro').value;
             const alerta = document.getElementById('alertaRegistro');
             alerta.style.display = 'none';
 
-            // Combinamos nombres y apellidos en una sola variable para mantener la compatibilidad con el backend
             const nombre_completo = `${nombres} ${apellidos}`;
 
             try {
-                const respuesta = await fetch('/api/usuarios/registro', {
+                const respuesta = await fetch(apiUrl('/api/usuarios/registro'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ nombre_completo, correo, contrasena, rol: 'usuario' })
                 });
+
                 if (respuesta.ok) {
                     alerta.innerText = `¡Registro exitoso! Ya puedes iniciar sesión. ✨`;
-                    alerta.style.backgroundColor = '#d1fae5'; alerta.style.color = '#065f46'; alerta.style.border = '1px solid #a7f3d0'; alerta.style.display = 'block';
+                    alerta.style.backgroundColor = '#d1fae5';
+                    alerta.style.color = '#065f46';
+                    alerta.style.border = '1px solid #a7f3d0';
+                    alerta.style.display = 'block';
                     document.getElementById('registroForm').reset();
                     setTimeout(() => { mostrarLogin(); }, 2000);
                 } else {
-                    alerta.innerText = 'El correo ya está registrado';
-                    alerta.style.backgroundColor = '#fee2e2'; alerta.style.color = '#991b1b'; alerta.style.border = '1px solid #fca5a5'; alerta.style.display = 'block';
+                    mostrarError(alerta, 'El correo ya está registrado');
                 }
-            } catch (error) { alerta.innerText = 'Error de conexión'; alerta.style.display = 'block'; }
+            } catch (error) {
+                console.error('Error de conexión:', error);
+                const mensaje = window.location.protocol === 'file:'
+                    ? 'No hay servidor activo. Ejecuta: npm start y abre http://localhost:3000'
+                    : 'Error de conexión. Revisa que el servidor esté ejecutándose.';
+                mostrarError(alerta, mensaje);
+            }
         });
     </script>
 </body>
+</html>
