@@ -1,9 +1,7 @@
-// Configuración básica para levantar el servidor sin errores de base de datos local
-console.log('Módulo de base de datos cargado correctamente.');
+console.log('Base de datos simulada activa');
 
 const db = {
   query: async (text, params) => {
-    console.log('Ejecutando consulta simulada:', text);
     return { rows: [] };
   }
 };
