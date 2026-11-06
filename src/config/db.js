@@ -1,43 +1,50 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-// Crea el archivo base_datos.db en la raíz de tu proyecto
+// Crea el archivo base_datos.db en la raíz del proyecto.
 const dbPath = path.resolve(__dirname, '../../base_datos.db');
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Error al conectar a SQLite:', err.message);
-    } else {
-        console.log('Conexión establecida con la base de datos local (SQLite)');
-        
-        // Crear las tablas necesarias si no existen
-        db.serialize(() => {
-            db.run(`CREATE TABLE IF NOT EXISTS usuario (
-                id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
-                nombre_completo TEXT,
-                correo TEXT UNIQUE,
-                contrasena TEXT,
-                rol TEXT DEFAULT 'usuario'
-            )`);
-            
-            db.run(`CREATE TABLE IF NOT EXISTS mascota (
-                id_mascota INTEGER PRIMARY KEY AUTOINCREMENT,
-                nombre TEXT,
-                especie TEXT,
-                raza TEXT,
-                edad INTEGER,
-                descripcion TEXT,
-                estado TEXT DEFAULT 'disponible'
-            )`);
-        });
+        return;
     }
+
+    console.log('Conexión establecida con la base de datos local (SQLite)');
+    db.serialize(() => {
+        db.run(`CREATE TABLE IF NOT EXISTS usuario (
+            id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre_completo TEXT,
+            correo TEXT UNIQUE,
+            contrasena TEXT,
+            rol TEXT DEFAULT 'usuario'
+        )`);
+        db.run(`CREATE TABLE IF NOT EXISTS mascota (
+            id_mascota INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT,
+            especie TEXT,
+            raza TEXT,
+            edad INTEGER,
+            descripcion TEXT,
+            estado TEXT DEFAULT 'disponible'
+        )`);
+        db.run(`CREATE TABLE IF NOT EXISTS solicitud_adopcion (
+            id_solicitud INTEGER PRIMARY KEY AUTOINCREMENT,
+            mascota TEXT NOT NULL,
+            nombre TEXT NOT NULL,
+            celular TEXT NOT NULL,
+            direccion TEXT NOT NULL,
+            correo TEXT NOT NULL,
+            mensaje TEXT NOT NULL,
+            fecha_solicitud DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`);
+    });
 });
 
-// Simulamos el método query de postgres para no romper tus rutas existentes
+// Adaptador para que las rutas que usan la sintaxis de PostgreSQL también
+// funcionen con SQLite.
 db.query = function (sql, params = []) {
     return new Promise((resolve, reject) => {
-        // Cambiar la sintaxis de \$1, \$2 a ? que usa SQLite
         const sqlCorregida = sql.replace(/\$\d+/g, '?');
-        
         if (sqlCorregida.trim().toUpperCase().startsWith('SELECT')) {
             db.all(sqlCorregida, params, (err, rows) => {
                 if (err) reject(err);
@@ -53,4 +60,3 @@ db.query = function (sql, params = []) {
 };
 
 module.exports = db;
-

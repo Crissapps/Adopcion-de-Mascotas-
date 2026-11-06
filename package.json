@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --dns-result-order=ipv4first src/index.js"
+    "dev": "nodemon --dns-result-order=ipv4first src/index.js",
+    "start": "node src/index.js"
   },
   "repository": {
     "type": "git",
@@ -14,15 +15,14 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/Nataly202004/Adopcion-de-Mascotas-/issues"
-  },
+  "bugs": { "url": "https://github.com/Nataly202004/Adopcion-de-Mascotas-/issues" },
   "homepage": "https://github.com/Nataly202004/Adopcion-de-Mascotas-#readme",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^18.0.3",
     "express": "^5.2.1",
+    "nodemailer": "^7.0.0",
     "pg": "^8.23.0",
     "sqlite3": "^6.0.1"
   },
